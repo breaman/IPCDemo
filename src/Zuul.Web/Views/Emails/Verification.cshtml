@@ -1,0 +1,27 @@
+﻿@model VerificationEmailViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Account Activation</title>
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+</head>
+<body>
+    <p>Dear @Model.FirstName @Model.LastName,</p>
+    <p>
+        To activate your account, please verify your email address by clicking on the link below:<br />
+        <strong>
+            <a href="@Model.VerifyUrl" style="margin:20px;display:block;color:#ffffff;font-family:'helvetica neue',helvetica,arial,sans-serif;font-size:18px;font-weight:600;padding:18px 0;line-height:1em;text-decoration:none;text-align:center;background-color:#FFB81D;border-radius:3px" target="_blank">
+                Account Verification
+            </a>
+        </strong><br />
+        <small>
+            Trouble with the button above? Copy and paste the link below into your browser:<br />
+            @Model.VerifyUrl
+        </small>
+    </p>
+    <p>
+        Please do not reply, as this is an automatic email and you will not receive a response back.
+    </p>
+</body>
+</html>
