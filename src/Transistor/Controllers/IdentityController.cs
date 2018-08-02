@@ -18,5 +18,19 @@ namespace Transistor.Controllers
         {
             return new JsonResult(from c in User.Claims select new { c.Type, c.Value });
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin")]
+        public IActionResult AdminAccess()
+        {
+            return new JsonResult(new[] { "You have admin access" });
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpGet("user")]
+        public IActionResult UserAccess()
+        {
+            return new JsonResult(new [] { "You have user access" });
+        }
     }
 }

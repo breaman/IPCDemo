@@ -17,5 +17,10 @@ namespace Fuse.Controllers
             await HttpContext.SignOutAsync("Cookies");
             await HttpContext.SignOutAsync("oidc");
         }
+
+        public IActionResult AccessDenied(string returnUrl = null)
+        {
+            return View();
+        }
     }
 }

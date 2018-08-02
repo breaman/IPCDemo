@@ -1,20 +1,13 @@
-﻿<dt>access token</dt>
-<dd>@await ViewContext.HttpContext.GetTokenAsync("access_token")</dd>
-
-<dt>refresh token</dt>
-<dd>@await ViewContext.HttpContext.GetTokenAsync("refresh_token")</dd>
-
-<dt>id token</dt>
-<dd>@await ViewContext.HttpContext.GetTokenAsync("id_token")</dd>
-
-<dl>
-    @foreach (var claim in User.Claims)
-    {
-        <dt>@claim.Type</dt>
-        <dd>@claim.Value</dd>
-    }
-</dl>
-
-<a asp-controller="Home" asp-action="CallApiUsingUserAccessToken">Call Transistor Endpoint</a>
-
+﻿<p>Welcome to your great Fuse site</p>
+<div>
+    <a asp-controller="Secure" asp-action="Index">Require auth</a>
+</div>
+<div>
+    <a asp-controller="Secure" asp-action="Admin">Require admin</a>
+</div>
+<div>
+    <a asp-controller="Secure" asp-action="User">Require user</a>
+</div>
+<div>
 <a asp-controller="Account" asp-action="Logout">Logout</a>
+</div>

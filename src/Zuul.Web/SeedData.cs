@@ -106,6 +106,36 @@ namespace Zuul.Web
                     {
                         Console.WriteLine("bob already exists");
                     }
+
+                    // Add some roles
+                    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+                    var adminRole = roleManager.FindByNameAsync("Admin").Result;
+                    if (adminRole == null)
+                    {
+                        var result = roleManager.CreateAsync(new Role { Name = "Admin" }).Result;
+                        if (!result.Succeeded)
+                        {
+                            throw new Exception(result.Errors.First().Description);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("admin role already exists");
+                    }
+
+                    var userRole = roleManager.FindByNameAsync("User").Result;
+                    if (userRole == null)
+                    {
+                        var result = roleManager.CreateAsync(new Role { Name = "User" }).Result;
+                        if (!result.Succeeded)
+                        {
+                            throw new Exception(result.Errors.First().Description);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("user role already exists");
+                    }
                 }
             }
 

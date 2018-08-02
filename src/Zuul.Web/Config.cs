@@ -3,6 +3,7 @@ using IdentityServer4.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Zuul.Web
@@ -14,6 +15,10 @@ namespace Zuul.Web
             return new List<ApiResource>
             {
                 new ApiResource("api1", "My API")
+                {
+                    // this is needed so that the role claim comes across to the api
+                    UserClaims = { "role" }
+                }
             };
         }
 
@@ -70,7 +75,8 @@ namespace Zuul.Web
                     AllowedScopes = new List<string>
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile
+                        IdentityServerConstants.StandardScopes.Profile,
+                        "roles"
                     }
                 },
 
@@ -97,7 +103,8 @@ namespace Zuul.Web
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
-                        "api1"
+                        "api1",
+                        "roles"
                     },
                     AllowOfflineAccess = true
                 }
@@ -110,6 +117,7 @@ namespace Zuul.Web
             {
                 new IdentityResources.OpenId(),
                 new IdentityResources.Profile(),
+                new IdentityResource("roles", "Roles Information", new[] { "role" })
             };
         }
     }

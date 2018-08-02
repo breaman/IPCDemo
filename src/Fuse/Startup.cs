@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Fuse
 {
@@ -43,12 +44,18 @@ namespace Fuse
 
                 options.Scope.Add("api1");
                 options.Scope.Add("offline_access");
+                options.Scope.Add("roles");
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = "name",
+                    RoleClaimType = "role"
+                };
 
                 // options.Events.OnUserInformationReceived = (context) => { System.Console.WriteLine(context.User); return Task.CompletedTask; };
 
-                // options.ClaimActions.Add(new JsonKeyClaimAction("role", "role", "role")); // just something to keep track of in case we want roles returned in ID_TOKEN
-
                 options.ClaimActions.MapJsonKey(JwtClaimTypes.WebSite, JwtClaimTypes.WebSite);
+                options.ClaimActions.MapJsonKey(JwtClaimTypes.Role, JwtClaimTypes.Role);
             });
         }
 
