@@ -3,10 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+    <TypeScriptToolsVersion>3.0</TypeScriptToolsVersion>
+    <UserSecretsId>c78009d8-b493-4002-b706-d1c0952b5d6c</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\" />
+    <Folder Include="images\" />
+    <Folder Include="wwwroot\lib\qrcodejs\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,10 +23,17 @@
     <PackageReference Include="Serilog.Settings.Configuration" Version="2.6.1" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.MSSqlServerCore" Version="1.1.0" />
+    <PackageReference Include="Twilio" Version="5.15.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Zuul.Domain\Zuul.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Views\Admin\UnableToUpdateRole.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
   </ItemGroup>
 
 </Project>

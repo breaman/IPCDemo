@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Mvc;
 using Zuul.Web.Attributes;
+using Zuul.Web.Services;
 using Zuul.Web.ViewModels;
 
 namespace Zuul.Web.Controllers
@@ -11,15 +12,24 @@ namespace Zuul.Web.Controllers
     public class HomeController : Controller
     {
         private IIdentityServerInteractionService IdentityServerInteractionService { get; }
+        private ISmsSender SmsSender { get; }
 
-        public HomeController(IIdentityServerInteractionService interaction)
+        public HomeController(IIdentityServerInteractionService interaction, ISmsSender smsSender)
         {
             IdentityServerInteractionService = interaction;
+            SmsSender = smsSender;
         }
 
         public IActionResult Index()
         {
             return View();
+        }
+
+        public async Task<IActionResult> SendText()
+        {
+            await SmsSender.SendSmsAsync("+15098693848", "Hello from our mvc app");
+
+            return Ok();
         }
 
         /// <summary>

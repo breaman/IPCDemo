@@ -38,6 +38,7 @@ namespace Zuul.Web.Controllers
         private IEventService EventService { get; }
         private IEmailViewRenderer EmailViewRenderer { get; }
         private IEmailSender EmailSender { get; }
+        private ISmsSender SmsSender { get; }
 
         // private readonly IEmailSender _emailSender;
         private ILogger Logger { get; }
@@ -51,6 +52,7 @@ namespace Zuul.Web.Controllers
             IEventService events,
             IEmailViewRenderer emailViewRenderer,
             IEmailSender emailSender,
+            ISmsSender smsSender,
             ILogger<AccountController> logger)
         {
             UserManager = userManager;
@@ -61,11 +63,11 @@ namespace Zuul.Web.Controllers
             EventService = events;
             EmailViewRenderer = emailViewRenderer;
             EmailSender = emailSender;
+            SmsSender = smsSender;
             Logger = logger;
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> Login(string returnUrl = null)
         {
             // build a model so we know what to show on the login page
@@ -125,14 +127,11 @@ namespace Zuul.Web.Controllers
                         if (result.Succeeded)
                         {
                             await EventService.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id.ToString(), user.UserName));
-                            // make sure the returnUrl is still valid, and if so redirect back to authorize endpoint or a local page
-                            // the IsLocalUrl check is only necessary if you want to support additional local pages, otherwise IsValidReturnUrl is more strict
-                            if (IdentityServerInteractionService.IsValidReturnUrl(viewModel.ReturnUrl) || Url.IsLocalUrl(viewModel.ReturnUrl))
-                            {
-                                return Redirect(viewModel.ReturnUrl);
-                            }
-
-                            return Redirect("~/");
+                            return RedirectBackToCaller(viewModel);
+                        }
+                        if (result.RequiresTwoFactor)
+                        {
+                            return RedirectToAction(nameof(LoginWith2fa), new { viewModel.ReturnUrl, viewModel.RememberLogin });
                         }
                         else
                         {
@@ -151,6 +150,128 @@ namespace Zuul.Web.Controllers
             // something went wrong, show form with error
             var vm = await BuildLoginViewModelAsync(viewModel);
             return View(vm);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> LoginWith2fa(bool rememberMe, string returnUrl = null)
+        {
+            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
+
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load two-factor authentication user.");
+            }
+
+            // need to figure out if we are doing sms 2 factor or authenticator app
+            // if phone is a valid auth option, assume sms, otherwise use authenticator
+            var validTwoFactorAuth = await UserManager.GetValidTwoFactorProvidersAsync(user);
+
+            if (validTwoFactorAuth.Count(v => v.ToLower() == "phone") > 0)
+            {
+                // send an sms message for the validation
+                var smsToken = await UserManager.GenerateTwoFactorTokenAsync(user, "Phone");
+                await SmsSender.SendSmsAsync(user.PhoneNumber, $"Your security code is: {smsToken}");
+            }
+
+            var model = new LoginWith2faViewModel { RememberMe = rememberMe, ReturnUrl = returnUrl };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LoginWith2fa(LoginWith2faViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                viewModel.TwoFactorCode = string.Empty;
+                return View(viewModel);
+            }
+
+            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load user with ID '{UserManager.GetUserId(User)}'.");
+            }
+
+            var authenticatorCode = viewModel.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
+
+            // need to verify against the right provider
+            var validTwoFactorAuth = await UserManager.GetValidTwoFactorProvidersAsync(user);
+
+            Microsoft.AspNetCore.Identity.SignInResult signInResult = null;
+            if (validTwoFactorAuth.Count(v => v.ToLower() == "phone") > 0)
+            {
+                signInResult = await SignInManager.TwoFactorSignInAsync("Phone", viewModel.TwoFactorCode, viewModel.RememberMe, viewModel.RememberMachine);
+            }
+            else
+            {
+                signInResult = await SignInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, viewModel.RememberMe, viewModel.RememberMachine);
+            }
+
+            if (signInResult.Succeeded)
+            {
+                await EventService.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id.ToString(), user.UserName));
+                return RedirectBackToCaller(viewModel);
+            }
+            else
+            {
+                await EventService.RaiseAsync(new UserLoginFailureEvent(user.Email, "invalid authenticator code entered for user"));
+                ModelState.AddModelError(string.Empty, AccountOptions.InvalidAuthenticatorCode);
+                viewModel.TwoFactorCode = string.Empty;
+                return View(viewModel);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> LoginWithRecoveryCode(string returnUrl = null)
+        {
+            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load two-factor authentication user.");
+            }
+
+            LoginWithRecoveryCodeViewModel viewModel = new LoginWithRecoveryCodeViewModel { ReturnUrl = returnUrl };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LoginWithRecoveryCode(LoginWithRecoveryCodeViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load user with ID '{UserManager.GetUserId(User)}'.");
+            }
+
+            var recoveryCode = model.RecoveryCode.Replace(" ", string.Empty);
+
+            var result = await SignInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
+
+            if (result.Succeeded)
+            {
+                Logger.LogInformation("User with ID {UserId} logged in with a recovery code.", user.Id);
+                return RedirectBackToCaller(model);
+            }
+            //if (result.IsLockedOut)
+            //{
+            //    Logger.LogWarning("User with ID {UserId} account locked out.", user.Id);
+            //    return RedirectToAction(nameof(Lockout));
+            //}
+            else
+            {
+                Logger.LogWarning("Invalid recovery code entered for user with ID {UserId}", user.Id);
+                ModelState.AddModelError(string.Empty, "Invalid recovery code entered.");
+                return View();
+            }
         }
 
         /// <summary>
@@ -639,6 +760,18 @@ namespace Zuul.Web.Controllers
             var message = await EmailViewRenderer.RenderAsync("Verification", viewDataDictionary);
 
             await EmailSender.SendEmailAsync(user.Email, "Account Activation", message);
+        }
+
+        private IActionResult RedirectBackToCaller(BaseLoginViewModel viewModel)
+        {
+            // make sure the returnUrl is still valid, and if so redirect back to authorize endpoint or a local page
+            // the IsLocalUrl check is only necessary if you want to support additional local pages, otherwise IsValidReturnUrl is more strict
+            if (IdentityServerInteractionService.IsValidReturnUrl(viewModel.ReturnUrl) || Url.IsLocalUrl(viewModel.ReturnUrl))
+            {
+                return Redirect(viewModel.ReturnUrl);
+            }
+
+            return Redirect("~/");
         }
     }
 }

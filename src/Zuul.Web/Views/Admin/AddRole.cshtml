@@ -1,0 +1,14 @@
+﻿<div>
+    <partial name="_ValidationSummary" />
+    <div class="row">
+        <form asp-action="AddRole" method="post">
+            <div class="form-group">
+                <label for="roleName">Name</label>
+                <input id="roleName" name="roleName" class="form-control" type="text" data-val="true" data-val-required="The Role Name field is required." />
+                <span class="text-danger field-validation-valid" data-valmsg-for="roleName" data-valmsg-replace="true"></span>
+            </div>
+            <input type="submit" value="Save" class="btn btn-primary" />
+            <a asp-controller="Admin" asp-action="Roles" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>

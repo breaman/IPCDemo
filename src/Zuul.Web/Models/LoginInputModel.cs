@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 
 namespace Zuul.Web.ViewModels
 {
-    public class LoginInputModel
+    public class LoginInputModel : BaseLoginViewModel
     {
         [Required]
         public string Username { get; set; }
         [Required]
         public string Password { get; set; }
         public bool RememberLogin { get; set; }
-        public string ReturnUrl { get; set; }
     }
 }

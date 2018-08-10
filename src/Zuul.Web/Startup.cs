@@ -76,6 +76,7 @@ namespace Zuul.Web
             builder.AddDeveloperSigningCredential();
 
             services.AddTransient<IEmailSender, SendGridEmailSender>();
+            services.AddTransient<ISmsSender, TwilioSmsSender>();
             services.AddTransient<IEmailViewRenderer, EmailViewRenderer>();
         }
 

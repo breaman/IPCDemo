@@ -8,5 +8,6 @@ namespace Zuul.Web.Models
     public class AppSettings
     {
         public EmailConfig Email { get; set; }
+        public SmsConfig SMS { get; set; }
     }
 }

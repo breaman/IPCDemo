@@ -1,0 +1,78 @@
+﻿@model EnableTwoFactorAuthViewModel
+
+<form asp-controller="Manage" asp-action="EnableTwoFactorAuth" asp-route-returnurl="@Model.ReturnUrl" method="post" class="form-horizontal">
+    <div class="row">
+        <div class="col-md-8">
+            Select Two-Factor Authentiation Provider:
+            <select asp-for="SelectedProvider" asp-items="Model.Providers"></select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="twoFactorAuth" id="Authenticator" style="display: none">
+            <p>To use an authenticator app for two factor authentication, go through the following steps:</p>
+            <ol class="list">
+                <li>
+                    <p>
+                        Download a two-factor authenticator app like Microsoft Authenticator for
+                        <a href="https://go.microsoft.com/fwlink/?Linkid=825071">Windows Phone</a>,
+                        <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> and
+                        <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> or
+                        Google Authenticator for
+                        <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> and
+                        <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
+                    </p>
+                </li>
+                <li>
+                    <p>Scan the QR Code or enter this key <kbd>@Model.SharedKey</kbd> into your two factor authenticator app. Spaces and casing do not matter.</p>
+                    <div class="alert alert-info">To enable QR code generation please read our <a href="https://go.microsoft.com/fwlink/?Linkid=852423">documentation</a>.</div>
+                    <div id="qrCode"></div>
+                    <div id="qrCodeData" data-url="@Model.AuthenticatorUri"></div>
+                </li>
+                <li>
+                    <p>
+                        Once you have scanned the QR code or input the key above, your two factor authentication app will provide you
+                        with a unique code. Enter the code in the confirmation box below.
+                    </p>
+                    <input asp-for="AuthenticatorCode" type="text" />
+                </li>
+            </ol>
+        </div>
+        <div class="twoFactorAuth" id="Phone" style="display: none">
+            <p>To use a phone for two factor authentication, go through the following steps:</p>
+            <ol class="list">
+                <li>
+                    <p>
+                        Input your phone number you want to receive text messages on. After submitting the phone number, you will be sent a
+                        verification code to make sure you own the device. On the next screen, enter the verification code.
+                    </p>
+                    <input asp-for="PhoneNumber" type="text" />
+                </li>
+            </ol>
+        </div>
+    </div>
+    <div class="row">
+        <button type="submit" class="btn btn-default">Submit</button>
+    </div>
+</form>
+
+@section Scripts {
+    <script type="text/javascript" src="~/lib/qrcodejs/qrcode.js"></script>
+    <script type="text/javascript">
+        new QRCode(document.getElementById("qrCode"),
+            {
+                text: "@Html.Raw(Model.AuthenticatorUri)",
+                width: 150,
+                height: 150
+            });
+
+        document.getElementById('SelectedProvider').addEventListener('change', function () {
+            // hide all the two factor authentication types
+            var authSections = document.getElementsByClassName('twoFactorAuth');
+            for (var i = 0; i < authSections.length; i++) {
+                authSections[i].style.display='none';
+            }
+            // show the authentication type that is chosen
+            document.getElementById(this.value).style.display = 'block';
+        });
+    </script>
+}

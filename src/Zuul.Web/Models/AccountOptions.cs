@@ -20,5 +20,6 @@ namespace Zuul.Web.Models
         public static bool IncludeWindowsGroups = false;
 
         public static string InvalidCredentialsErrorMessage = "Invalid username or password";
+        public static string InvalidAuthenticatorCode = "Invalid authenticator code.";
     }
 }

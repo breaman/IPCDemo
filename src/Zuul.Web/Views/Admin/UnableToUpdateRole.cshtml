@@ -1,0 +1,9 @@
+﻿@model IEnumerable<IdentityError>
+
+    <p>@ViewBag.Message</p>
+<ul>
+    @foreach(var error in Model)
+    {
+        <li>@error.Code - @error.Description</li>
+    }
+</ul>

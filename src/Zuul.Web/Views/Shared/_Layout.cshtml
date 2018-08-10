@@ -1,9 +1,11 @@
 @using IdentityServer4.Extensions
 @{
     string name = null;
+    bool? isAdmin = false;
     if (!true.Equals(ViewData["signed-out"]))
     {
         name = Context.User?.GetDisplayName();
+        isAdmin = Context.User?.IsInRole("Admin");
     }
 }
 <!DOCTYPE html>
@@ -12,32 +14,41 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IdentityServer4</title>
-    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <title>Zuul</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="shortcut icon" type="image/x-icon" href="~/favicon.ico" />
     <!-- Stylesheets -->
     
-    <link href="~/css/main.96e8655430e3702e5655.css" rel="stylesheet" />
+    <link href="~/css/main.83c53345721862b54a60.css" rel="stylesheet" />
     
     <!-- End Stylesheets -->
 </head>
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
         <div class="container-fluid">
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
                 </button>
                 <a href="~/">
                     <span class="navbar-brand">
-                        <img src="~/icon.png" class="icon-banner">
+                        <img src="~/img/icon.png" class="icon-banner">
                         IdentityServer4
                     </span>
                 </a>
             </div>
+
+            @if (isAdmin.HasValue && isAdmin.Value)
+            {
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Admin" asp-action="Users">Users</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Admin" asp-action="Roles">Roles</a>
+                </li>
+            </ul>
+            }
 
             @if (!string.IsNullOrWhiteSpace(name))
             {
@@ -51,7 +62,7 @@
                 </ul>
             }
         </div>
-    </div>
+    </nav>
 
     <div class="container body-content">
         @RenderBody()
@@ -59,7 +70,7 @@
 
     <!-- Scripts -->
     
-    <script src="~/js/main.96e8655430e3702e5655.js"></script>
+    <script src="~/js/main.83c53345721862b54a60.js"></script>
     
     <!-- End Scripts -->
     @RenderSection("scripts", required: false)

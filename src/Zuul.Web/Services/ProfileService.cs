@@ -60,8 +60,8 @@ namespace Zuul.Web.Services
                 var nameClaim = claims.SingleOrDefault(c => c.Type == JwtClaimTypes.Name);
                 claims.Remove(nameClaim);
             }
-
             claims.Add(new Claim(JwtClaimTypes.Name, $"{user.FirstName} {user.LastName}"));
+            // claims.Add(new Claim(JwtClaimTypes.Dis, $"{user.FirstName} {user.LastName}"));
 
             context.AddRequestedClaims(claims);
         }

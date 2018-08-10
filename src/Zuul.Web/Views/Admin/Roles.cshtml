@@ -1,0 +1,21 @@
+﻿@model RoleAdminViewModel
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Roles)
+        {
+            <tr>
+                <td>@user.Id</td>
+                <td>@user.Name</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-controller="Admin" asp-action="AddRole" class="btn btn-primary">Add Role</a>
