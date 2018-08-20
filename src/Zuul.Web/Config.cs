@@ -17,7 +17,7 @@ namespace Zuul.Web
                 new ApiResource("api1", "My API")
                 {
                     // this is needed so that the role claim comes across to the api
-                    UserClaims = { "role" }
+                    UserClaims = { "role", "myipc", "gis" }
                 }
             };
         }
@@ -67,16 +67,18 @@ namespace Zuul.Web
                     RequireConsent = false,
 
                     // where to redirect to after login
-                    RedirectUris = { "https://localhost:44379/signin-oidc" },
+                    RedirectUris = { "https://localhost:44309/signin-oidc" },
 
                     // where to redirect to after logout
-                    PostLogoutRedirectUris = { "https://localhost:44379/signout-callback-oidc" },
+                    PostLogoutRedirectUris = { "https://localhost:44309/signout-callback-oidc" },
 
                     AllowedScopes = new List<string>
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
-                        "roles"
+                        "roles",
+                        "myipc",
+                        "gis"
                     }
                 },
 
@@ -94,17 +96,19 @@ namespace Zuul.Web
                     RequireConsent = false,
 
                     // where to redirect to after login
-                    RedirectUris = { "https://localhost:44379/signin-oidc" },
+                    RedirectUris = { "https://localhost:44309/signin-oidc" },
 
                     // where to redirect to after logout
-                    PostLogoutRedirectUris = { "https://localhost:44379/signout-callback-oidc" },
+                    PostLogoutRedirectUris = { "https://localhost:44309/signout-callback-oidc" },
 
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
                         "api1",
-                        "roles"
+                        "roles",
+                        "myipc",
+                        "gis"
                     },
                     AllowOfflineAccess = true
                 }
@@ -117,7 +121,9 @@ namespace Zuul.Web
             {
                 new IdentityResources.OpenId(),
                 new IdentityResources.Profile(),
-                new IdentityResource("roles", "Roles Information", new[] { "role" })
+                new IdentityResource("roles", "Roles Information", new[] { "role" }),
+                new IdentityResource("myipc", "Access to MyIPC application", new[] {"myipc"}),
+                new IdentityResource("gis", "Access to GIS application", new[] {"gis"}),
             };
         }
     }

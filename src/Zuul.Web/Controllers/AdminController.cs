@@ -150,13 +150,16 @@ namespace Zuul.Web.Controllers
             var user = await UserManager.FindByIdAsync(viewModel.Id.ToString());
             if (user != null)
             {
-                var passwordResetToken = await UserManager.GeneratePasswordResetTokenAsync(user);
-                var passwordResetResponse = await UserManager.ResetPasswordAsync(user, passwordResetToken, viewModel.Password);
-                if (!passwordResetResponse.Succeeded)
-                {
-                    ViewBag.Message = "Unable to set the user's password with the following reasons";
-                    return View("UnableToUpdateUser", passwordResetResponse.Errors);
-                }
+                PasswordHasher<User> passwordHasher = new PasswordHasher<User>();
+
+                string hashedPassword = passwordHasher.HashPassword(user, "helloworld");
+                //var passwordResetToken = await UserManager.GeneratePasswordResetTokenAsync(user);
+                //var passwordResetResponse = await UserManager.ResetPasswordAsync(user, passwordResetToken, viewModel.Password);
+                //if (!passwordResetResponse.Succeeded)
+                //{
+                //    ViewBag.Message = "Unable to set the user's password with the following reasons";
+                //    return View("UnableToUpdateUser", passwordResetResponse.Errors);
+                //}
                 return RedirectToAction("Users");
             }
             else

@@ -1,0 +1,27 @@
+﻿<p>Welcome to your great Apps site</p>
+<div>
+    <a asp-controller="Secure" asp-action="Index">Require auth</a>
+</div>
+<div>
+    <a asp-controller="Secure" asp-action="Admin">Require admin</a>
+</div>
+<div>
+    <a asp-controller="Secure" asp-action="User">Require user</a>
+</div>
+<div>
+    <ul>
+        <li><a asp-controller="MyIPC" asp-action="Index">MyIPC</a></li>
+        <li><a asp-controller="MyIPC" asp-action="DoSomething">MyIPC - Approved</a></li>
+        <li><a asp-controller="MyIPC" asp-action="Register">Register MyIPC</a></li>
+    </ul>
+</div>
+<div>
+    <ul>
+        <li><a asp-controller="GIS" asp-action="Index">GIS</a></li>
+        <li><a asp-controller="GIS" asp-action="DoSomething">GIS - Approved</a></li>
+        <li><a asp-controller="GIS" asp-action="Register">Register GIS</a></li>
+    </ul>
+</div>
+<div>
+    <a asp-controller="Account" asp-action="Logout">Logout</a>
+</div>

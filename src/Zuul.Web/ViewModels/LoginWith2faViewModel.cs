@@ -18,5 +18,6 @@ namespace Zuul.Web.ViewModels
         public bool RememberMachine { get; set; }
 
         public bool RememberMe { get; set; }
+        public string AuthenticationMethod { get; set; }
     }
 }

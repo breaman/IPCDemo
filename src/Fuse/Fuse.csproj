@@ -2,18 +2,52 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
+    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Scripts\CsrUserManagement.ts" />
+    <None Remove="Scripts\GisUserManagement.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Api\" />
+    <Folder Include="Models\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="IdentityModel" Version="3.8.0" />
+    <PackageReference Include="IntelliTect.Coalesce.Knockout" Version="2.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.8.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.8.2" />
     <PackageReference Include="Serilog.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="2.6.1" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="IntelliTect.Coalesce.Tools" Version="2.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fuse.Domain\Fuse.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="Scripts\CsrUserManagement.ts" />
+    <TypeScriptCompile Include="Scripts\GisUserManagement.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Views\GIS\Index.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\MyIPC\Index.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
   </ItemGroup>
 
 </Project>

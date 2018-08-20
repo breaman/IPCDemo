@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Zuul.Domain.Models;
@@ -70,6 +71,8 @@ namespace Zuul.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl = null)
         {
+            var authorizationContext = await IdentityServerInteractionService.GetAuthorizationContextAsync(returnUrl);
+            ViewBag.Tenant = authorizationContext.Tenant;
             // build a model so we know what to show on the login page
             var vm = await BuildLoginViewModelAsync(returnUrl);
 
@@ -131,7 +134,23 @@ namespace Zuul.Web.Controllers
                         }
                         if (result.RequiresTwoFactor)
                         {
-                            return RedirectToAction(nameof(LoginWith2fa), new { viewModel.ReturnUrl, viewModel.RememberLogin });
+                            // Present user with option if there is both phone and authenticator
+                            // else just assume authenticator
+                            var validTwoFactorAuth = await UserManager.GetValidTwoFactorProvidersAsync(user);
+
+                            if (validTwoFactorAuth.Count(v => v.ToLower() == "phone") > 0)
+                            {
+                                return RedirectToAction(nameof(SendCode), new { viewModel.ReturnUrl, viewModel.RememberLogin });
+                            }
+                            else
+                            {
+                                return RedirectToAction(nameof(VerifyCode), new { viewModel.RememberLogin, authenticationMethod = "authenticator", viewModel.ReturnUrl });
+                            }
+                        }
+                        if (result.IsLockedOut)
+                        {
+                            await EventService.RaiseAsync(new UserLoginFailureEvent(viewModel.Username, "user locked out."));
+                            return View("Lockout");
                         }
                         else
                         {
@@ -151,36 +170,55 @@ namespace Zuul.Web.Controllers
             var vm = await BuildLoginViewModelAsync(viewModel);
             return View(vm);
         }
-
         [HttpGet]
-        public async Task<IActionResult> LoginWith2fa(bool rememberMe, string returnUrl = null)
+        public async Task<IActionResult> SendCode(string returnUrl = null, bool rememberMe = false)
+        {
+            var user = await GetTwoFactorAuthUser();
+
+            var validTwoFactorAuth = await UserManager.GetValidTwoFactorProvidersAsync(user);
+            var factorOptions = validTwoFactorAuth.Select(purpose => new SelectListItem { Text = purpose, Value = purpose }).ToList();
+
+            return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendCode(SendCodeViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(viewModel);
+            }
+
+            var user = await GetTwoFactorAuthUser();
+
+            return RedirectToAction(nameof(VerifyCode), new { viewModel.RememberMe, viewModel.SelectedProvider, viewModel.ReturnUrl });
+        }
+
+        private async Task<User> GetTwoFactorAuthUser()
         {
             var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
-
             if (user == null)
             {
                 throw new ApplicationException($"Unable to load two-factor authentication user.");
             }
 
-            // need to figure out if we are doing sms 2 factor or authenticator app
-            // if phone is a valid auth option, assume sms, otherwise use authenticator
-            var validTwoFactorAuth = await UserManager.GetValidTwoFactorProvidersAsync(user);
+            return user;
+        }
 
-            if (validTwoFactorAuth.Count(v => v.ToLower() == "phone") > 0)
-            {
-                // send an sms message for the validation
-                var smsToken = await UserManager.GenerateTwoFactorTokenAsync(user, "Phone");
-                await SmsSender.SendSmsAsync(user.PhoneNumber, $"Your security code is: {smsToken}");
-            }
+        [HttpGet]
+        public async Task<IActionResult> VerifyCode(bool rememberMe, string authenticationMethod, string returnUrl = null)
+        {
+            var user = await GetTwoFactorAuthUser();
 
-            var model = new LoginWith2faViewModel { RememberMe = rememberMe, ReturnUrl = returnUrl };
+            var model = new LoginWith2faViewModel { RememberMe = rememberMe, AuthenticationMethod = authenticationMethod, ReturnUrl = returnUrl };
 
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> LoginWith2fa(LoginWith2faViewModel viewModel)
+        public async Task<IActionResult> VerifyCode(LoginWith2faViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {
@@ -188,11 +226,7 @@ namespace Zuul.Web.Controllers
                 return View(viewModel);
             }
 
-            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
-            if (user == null)
-            {
-                throw new ApplicationException($"Unable to load user with ID '{UserManager.GetUserId(User)}'.");
-            }
+            var user = await GetTwoFactorAuthUser();
 
             var authenticatorCode = viewModel.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
 
@@ -200,7 +234,7 @@ namespace Zuul.Web.Controllers
             var validTwoFactorAuth = await UserManager.GetValidTwoFactorProvidersAsync(user);
 
             Microsoft.AspNetCore.Identity.SignInResult signInResult = null;
-            if (validTwoFactorAuth.Count(v => v.ToLower() == "phone") > 0)
+            if (viewModel.AuthenticationMethod.ToLower() == "phone")
             {
                 signInResult = await SignInManager.TwoFactorSignInAsync("Phone", viewModel.TwoFactorCode, viewModel.RememberMe, viewModel.RememberMachine);
             }
@@ -226,11 +260,7 @@ namespace Zuul.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> LoginWithRecoveryCode(string returnUrl = null)
         {
-            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
-            if (user == null)
-            {
-                throw new ApplicationException($"Unable to load two-factor authentication user.");
-            }
+            var user = await GetTwoFactorAuthUser();
 
             LoginWithRecoveryCodeViewModel viewModel = new LoginWithRecoveryCodeViewModel { ReturnUrl = returnUrl };
 
@@ -246,11 +276,7 @@ namespace Zuul.Web.Controllers
                 return View(model);
             }
 
-            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
-            if (user == null)
-            {
-                throw new ApplicationException($"Unable to load user with ID '{UserManager.GetUserId(User)}'.");
-            }
+            var user = await GetTwoFactorAuthUser();
 
             var recoveryCode = model.RecoveryCode.Replace(" ", string.Empty);
 

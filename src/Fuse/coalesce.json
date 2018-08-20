@@ -1,0 +1,8 @@
+{
+  "webProject": {
+    "projectFile": "./Fuse.csproj"
+  },
+  "dataProject": {
+    "projectFile": "../Fuse.Domain/Fuse.Domain.csproj"
+  }
+}
