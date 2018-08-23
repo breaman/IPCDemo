@@ -16,12 +16,12 @@
         padding: 10px 15px;
     }
 </style>
-<div class="table-view obj-role">
+<div class="table-view obj-usersRoles">
     <div class="table-view-header">
         <div class="clearfix">
             <h1 style="display: inline-block">
-                Role List
-                <span style="font-size: .5em; padding-left: 20px;"><a href="~/Role/Docs">API Docs</a></span>
+                Users Roles List
+                <span style="font-size: .5em; padding-left: 20px;"><a href="~/UsersRoles/Docs">API Docs</a></span>
             </h1>
         </div>
         <div class="clearfix">
@@ -44,15 +44,15 @@
             </select>
             <input class="form-control pull-right" style="width: 250px; margin-left: 20px" data-bind="textInput: search" placeholder="Search" />
             <div class="btn-group pull-right">
-                <a href="~/Role/CreateEdit?@(ViewBag.Query)" role="button" class="btn btn-sm btn-default "><i class="fa fa-plus"></i> Create</a>
+                <a href="~/UsersRoles/CreateEdit?@(ViewBag.Query)" role="button" class="btn btn-sm btn-default "><i class="fa fa-plus"></i> Create</a>
                 <button data-bind="click:load" class="btn btn-sm btn-default "><i class="fa fa-refresh"></i> Refresh</button>
                 @if (ViewBag.Editable)
                 {
-                    <a href="~/Role/Table?@(ViewBag.Query)" role="button" class="btn btn-sm btn-default "><i class="fa fa-lock"></i> Make Read-only</a>
+                    <a href="~/UsersRoles/Table?@(ViewBag.Query)" role="button" class="btn btn-sm btn-default "><i class="fa fa-lock"></i> Make Read-only</a>
                 }
                 else
                 {
-                    <a href="~/Role/TableEdit?@ViewBag.Query" role="button" class="btn btn-sm btn-default "><i class="fa fa-pencil"></i> Make Editable</a>
+                    <a href="~/UsersRoles/TableEdit?@ViewBag.Query" role="button" class="btn btn-sm btn-default "><i class="fa fa-pencil"></i> Make Editable</a>
                 }
                 <a href="#" role="button" class="btn btn-sm btn-default " data-bind="attr:{href: downloadAllCsvUrl}"><i class="fa fa-download"></i> CSV</a>
                 <button role="button" class="btn btn-sm btn-default " data-bind="click: csvUploadUi"><i class="fa fa-upload"></i> CSV</button>
@@ -65,29 +65,17 @@
             <table class="table @(ViewBag.Editable ? "editable" : "" )">
                 <thead>
                     <tr>
-                        <th class="sortable-header" data-bind="click: function(){orderByToggle('Name')}">
-                            Name
-                            <i class="pull-right fa" data-bind="css:{'fa-caret-up': orderBy() == 'Name', 'fa-caret-down': orderByDescending() == 'Name'}"></i>
-                        </th>
-                        <th>Claims</th>
-                        <th>Users</th>
                         <th style="width: 1%">
                         </th>
                     </tr>
                 </thead>
                 <tbody data-bind="foreach: items">
-                    <tr data-bind="css: {'btn-warning': errorMessage()}, attr: {id: id}">
+                    <tr data-bind="css: {'btn-warning': errorMessage()}, attr: {id: userId}">
                         @if (@ViewBag.Editable)
                         {
-                            <td class="prop-name">@(Knockout.InputFor<Fuse.Domain.Models.Role>(p => p.Name))</td>
-                            <td class="prop-claims"><a data-bind='attr: {href: claimsListUrl}, text: claims().length + " - Edit"' class='btn btn-default btn-sm'></a></td>
-                            <td class="prop-users"><a data-bind='attr: {href: usersListUrl}, text: users().length + " - Edit"' class='btn btn-default btn-sm'></a></td>
                         }
                         else
                         {
-                            <td class="prop-name">@(Knockout.DisplayFor<Fuse.Domain.Models.Role>(p => p.Name, true))</td>
-                            <td class="prop-claims"><a data-bind='attr: {href: claimsListUrl}, text: claims().length + " - Edit"' class='btn btn-default btn-sm'></a></td>
-                            <td class="prop-users"><a data-bind='attr: {href: usersListUrl}, text: users().length + " - Edit"' class='btn btn-default btn-sm'></a></td>
                         }
                         <td>
                             <!-- Editor buttons -->
@@ -116,35 +104,35 @@
         {
             @:Coalesce.GlobalConfiguration.viewModel.setupValidationAutomatically(false);
         }
-        var roleList = new ListViewModels.RoleList();
+        var usersRolesList = new ListViewModels.UsersRolesList();
         
         // Set up parent info based on the URL.
         @if (ViewBag.Query != null)
         {
-            @:roleList.queryString = "@(ViewBag.Query)";
+            @:usersRolesList.queryString = "@(ViewBag.Query)";
         }
         
         // Save and restore values from the URL:
         var urlVariables = ['page', 'pageSize', 'search', 'orderBy', 'orderByDescending'];
         $.each(urlVariables, function(){
             var param = Coalesce.Utilities.GetUrlParameter(this);
-            if (param) {roleList[this](param);}
+            if (param) {usersRolesList[this](param);}
         })
-        roleList.isLoading.subscribe(function(){
+        usersRolesList.isLoading.subscribe(function(){
             var newUrl = window.location.href;
         
             $.each(urlVariables, function(){
-                var param = roleList[this]();
+                var param = usersRolesList[this]();
                 newUrl = Coalesce.Utilities.SetUrlParameter(newUrl, this, param);
             })
             history.replaceState(null, document.title, newUrl);
         });
         
-        roleList.isSavingAutomatically = false;
-        ko.applyBindings(roleList);
-        roleList.isSavingAutomatically = true;
+        usersRolesList.isSavingAutomatically = false;
+        ko.applyBindings(usersRolesList);
+        usersRolesList.isSavingAutomatically = true;
         
-        roleList.includes = "RoleListGen";
-        roleList.load();
+        usersRolesList.includes = "UsersRolesListGen";
+        usersRolesList.load();
     </script>
 }

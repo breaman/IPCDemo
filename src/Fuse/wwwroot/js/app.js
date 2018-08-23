@@ -2190,7 +2190,24 @@ var ViewModels;
             /** The namespace containing all possible values of this.dataSource. */
             _this.dataSources = ListViewModels.RoleDataSources;
             _this.name = ko.observable(null);
+            _this.claims = ko.observableArray([]);
+            _this.users = ko.observableArray([]);
             _this.id = ko.observable(null);
+            /** Add object to claims */
+            _this.addToClaims = function (autoSave) {
+                var newItem = new ViewModels.RoleClaim();
+                if (typeof (autoSave) == 'boolean') {
+                    newItem.coalesceConfig.autoSaveEnabled(autoSave);
+                }
+                newItem.parent = _this;
+                newItem.parentCollection = _this.claims;
+                newItem.isExpanded(true);
+                newItem.roleId(_this.id());
+                _this.claims.push(newItem);
+                return newItem;
+            };
+            /** Url for a table view of all members of collection Claims for the current object. */
+            _this.claimsListUrl = ko.computed(function () { return _this.coalesceConfig.baseViewUrl() + '/RoleClaim/Table?filter.roleId=' + _this.id(); }, null, { deferEvaluation: true });
             /**
                 Load the ViewModel object from the DTO.
                 @param data: The incoming data object to load.
@@ -2208,6 +2225,14 @@ var ViewModels;
                 _this.myId = data.id;
                 _this.id(data.id);
                 // Load the lists of other objects
+                if (data.claims != null) {
+                    // Merge the incoming array
+                    Coalesce.KnockoutUtilities.RebuildArray(_this.claims, data.claims, 'id', ViewModels.RoleClaim, _this, allowCollectionDeletes);
+                }
+                if (data.users != null) {
+                    // Merge the incoming array
+                    Coalesce.KnockoutUtilities.RebuildArray(_this.users, data.users, 'id', ViewModels.User, _this, allowCollectionDeletes);
+                }
                 // The rest of the objects are loaded now.
                 _this.name(data.name);
                 if (_this.coalesceConfig.onLoadFromDto()) {
@@ -2237,6 +2262,24 @@ var ViewModels;
             };
             _this.baseInitialize();
             var self = _this;
+            // List Object model for Claims. Allows for loading subsets of data.
+            var _claimsList;
+            _this.claimsList = function (loadImmediate) {
+                if (loadImmediate === void 0) { loadImmediate = true; }
+                if (!_claimsList) {
+                    _claimsList = new ListViewModels.RoleClaimList();
+                    if (loadImmediate)
+                        loadClaimsList();
+                    self.id.subscribe(loadClaimsList);
+                }
+                return _claimsList;
+            };
+            function loadClaimsList() {
+                if (self.id()) {
+                    _claimsList.queryString = "filter.RoleId=" + self.id();
+                    _claimsList.load();
+                }
+            }
             self.name.subscribe(self.autoSave);
             if (newItem) {
                 self.loadFromDto(newItem, true);
@@ -2454,6 +2497,21 @@ var ListViewModels;
             return Default;
         }(Coalesce.DataSource));
         RoleDataSources.Default = Default;
+        var FetchRolesForApplication = /** @class */ (function (_super) {
+            __extends(FetchRolesForApplication, _super);
+            function FetchRolesForApplication() {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
+                _this.applicationName = ko.observable(null);
+                _this.saveToDto = function () {
+                    var dto = {};
+                    dto.applicationName = _this.applicationName();
+                    return dto;
+                };
+                return _this;
+            }
+            return FetchRolesForApplication;
+        }(Coalesce.DataSource));
+        RoleDataSources.FetchRolesForApplication = FetchRolesForApplication;
     })(RoleDataSources = ListViewModels.RoleDataSources || (ListViewModels.RoleDataSources = {}));
     var RoleList = /** @class */ (function (_super) {
         __extends(RoleList, _super);
@@ -2509,7 +2567,9 @@ var ViewModels;
             _this.lockoutEnd = ko.observable(null);
             _this.accountLocked = ko.observable(null);
             _this.passwordHash = ko.observable(null);
+            _this.approvalStatus = ko.observable(null);
             _this.claims = ko.observableArray([]);
+            _this.roles = ko.observableArray([]);
             _this.id = ko.observable(null);
             /** Add object to claims */
             _this.addToClaims = function (autoSave) {
@@ -2547,6 +2607,10 @@ var ViewModels;
                     // Merge the incoming array
                     Coalesce.KnockoutUtilities.RebuildArray(_this.claims, data.claims, 'id', ViewModels.UserClaim, _this, allowCollectionDeletes);
                 }
+                if (data.roles != null) {
+                    // Merge the incoming array
+                    Coalesce.KnockoutUtilities.RebuildArray(_this.roles, data.roles, 'id', ViewModels.Role, _this, allowCollectionDeletes);
+                }
                 // The rest of the objects are loaded now.
                 _this.firstName(data.firstName);
                 _this.lastName(data.lastName);
@@ -2563,6 +2627,7 @@ var ViewModels;
                 }
                 _this.accountLocked(data.accountLocked);
                 _this.passwordHash(data.passwordHash);
+                _this.approvalStatus(data.approvalStatus);
                 if (_this.coalesceConfig.onLoadFromDto()) {
                     _this.coalesceConfig.onLoadFromDto()(_this);
                 }
@@ -2588,6 +2653,7 @@ var ViewModels;
                 else
                     dto.lockoutEnd = _this.lockoutEnd().format('YYYY-MM-DDTHH:mm:ssZZ');
                 dto.passwordHash = _this.passwordHash();
+                dto.approvalStatus = _this.approvalStatus();
                 return dto;
             };
             /**
@@ -2630,6 +2696,7 @@ var ViewModels;
             self.accessFailedCount.subscribe(self.autoSave);
             self.lockoutEnd.subscribe(self.autoSave);
             self.passwordHash.subscribe(self.autoSave);
+            self.approvalStatus.subscribe(self.autoSave);
             if (newItem) {
                 self.loadFromDto(newItem, true);
             }
@@ -2848,9 +2915,9 @@ var ListViewModels;
             return Default;
         }(Coalesce.DataSource));
         UserDataSources.Default = Default;
-        var FetchForApplication = /** @class */ (function (_super) {
-            __extends(FetchForApplication, _super);
-            function FetchForApplication() {
+        var FetchUsersForApplication = /** @class */ (function (_super) {
+            __extends(FetchUsersForApplication, _super);
+            function FetchUsersForApplication() {
                 var _this = _super !== null && _super.apply(this, arguments) || this;
                 _this.applicationName = ko.observable(null);
                 _this.saveToDto = function () {
@@ -2860,9 +2927,17 @@ var ListViewModels;
                 };
                 return _this;
             }
-            return FetchForApplication;
+            return FetchUsersForApplication;
         }(Coalesce.DataSource));
-        UserDataSources.FetchForApplication = FetchForApplication;
+        UserDataSources.FetchUsersForApplication = FetchUsersForApplication;
+        var FetchUsersForManagement = /** @class */ (function (_super) {
+            __extends(FetchUsersForManagement, _super);
+            function FetchUsersForManagement() {
+                return _super !== null && _super.apply(this, arguments) || this;
+            }
+            return FetchUsersForManagement;
+        }(Coalesce.DataSource));
+        UserDataSources.FetchUsersForManagement = FetchUsersForManagement;
     })(UserDataSources = ListViewModels.UserDataSources || (ListViewModels.UserDataSources = {}));
     var UserList = /** @class */ (function (_super) {
         __extends(UserList, _super);
@@ -2887,6 +2962,129 @@ var ListViewModels;
         return UserList;
     }(Coalesce.BaseListViewModel));
     ListViewModels.UserList = UserList;
+})(ListViewModels || (ListViewModels = {}));
+/// <reference path="../coalesce.dependencies.d.ts" />
+// Generated by IntelliTect.Coalesce
+var ViewModels;
+/// <reference path="../coalesce.dependencies.d.ts" />
+// Generated by IntelliTect.Coalesce
+(function (ViewModels) {
+    var UsersRoles = /** @class */ (function (_super) {
+        __extends(UsersRoles, _super);
+        function UsersRoles(newItem, parent) {
+            var _this = _super.call(this, parent) || this;
+            _this.modelName = "UsersRoles";
+            _this.primaryKeyName = "userId";
+            _this.modelDisplayName = "Users Roles";
+            _this.apiController = "/UsersRoles";
+            _this.viewController = "/UsersRoles";
+            /** Configuration for the current UsersRoles instance. */
+            _this.coalesceConfig = new Coalesce.ViewModelConfiguration(UsersRoles.coalesceConfig);
+            /** The namespace containing all possible values of this.dataSource. */
+            _this.dataSources = ListViewModels.UsersRolesDataSources;
+            _this.userId = ko.observable(null);
+            _this.roleId = ko.observable(null);
+            /**
+                Load the ViewModel object from the DTO.
+                @param data: The incoming data object to load.
+                @param force: Will override the check against isLoading that is done to prevent recursion. False is default.
+                @param allowCollectionDeletes: Set true when entire collections are loaded. True is the default.
+                In some cases only a partial collection is returned, set to false to only add/update collections.
+            */
+            _this.loadFromDto = function (data, force, allowCollectionDeletes) {
+                if (force === void 0) { force = false; }
+                if (allowCollectionDeletes === void 0) { allowCollectionDeletes = true; }
+                if (!data || (!force && _this.isLoading()))
+                    return;
+                _this.isLoading(true);
+                // Set the ID 
+                _this.myId = data.userId;
+                _this.userId(data.userId);
+                // Load the lists of other objects
+                // The rest of the objects are loaded now.
+                if (_this.coalesceConfig.onLoadFromDto()) {
+                    _this.coalesceConfig.onLoadFromDto()(_this);
+                }
+                _this.isLoading(false);
+                _this.isDirty(false);
+                if (_this.coalesceConfig.validateOnLoadFromDto())
+                    _this.validate();
+            };
+            /** Saves this object into a data transfer object to send to the server. */
+            _this.saveToDto = function () {
+                var dto = {};
+                dto.userId = _this.userId();
+                return dto;
+            };
+            /**
+                Loads any child objects that have an ID set, but not the full object.
+                This is useful when creating an object that has a parent object and the ID is set on the new child.
+            */
+            _this.loadChildren = function (callback) {
+                var loadingCount = 0;
+                if (loadingCount == 0 && typeof (callback) == "function") {
+                    callback();
+                }
+            };
+            _this.baseInitialize();
+            var self = _this;
+            if (newItem) {
+                self.loadFromDto(newItem, true);
+            }
+            return _this;
+        }
+        UsersRoles.prototype.setupValidation = function () {
+            if (this.errors !== null)
+                return;
+            this.errors = ko.validation.group([]);
+            this.warnings = ko.validation.group([]);
+        };
+        /** Configuration for all instances of UsersRoles. Can be overidden on each instance via instance.coalesceConfig. */
+        UsersRoles.coalesceConfig = new Coalesce.ViewModelConfiguration(Coalesce.GlobalConfiguration.viewModel);
+        return UsersRoles;
+    }(Coalesce.BaseViewModel));
+    ViewModels.UsersRoles = UsersRoles;
+})(ViewModels || (ViewModels = {}));
+/// <reference path="../coalesce.dependencies.d.ts" />
+// Generated by IntelliTect.Coalesce
+var ListViewModels;
+/// <reference path="../coalesce.dependencies.d.ts" />
+// Generated by IntelliTect.Coalesce
+(function (ListViewModels) {
+    var UsersRolesDataSources;
+    (function (UsersRolesDataSources) {
+        var Default = /** @class */ (function (_super) {
+            __extends(Default, _super);
+            function Default() {
+                return _super !== null && _super.apply(this, arguments) || this;
+            }
+            return Default;
+        }(Coalesce.DataSource));
+        UsersRolesDataSources.Default = Default;
+    })(UsersRolesDataSources = ListViewModels.UsersRolesDataSources || (ListViewModels.UsersRolesDataSources = {}));
+    var UsersRolesList = /** @class */ (function (_super) {
+        __extends(UsersRolesList, _super);
+        function UsersRolesList() {
+            var _this = _super.call(this) || this;
+            _this.modelName = "UsersRoles";
+            _this.apiController = "/UsersRoles";
+            _this.modelKeyName = "userId";
+            _this.itemClass = ViewModels.UsersRoles;
+            _this.filter = null;
+            /** The namespace containing all possible values of this.dataSource. */
+            _this.dataSources = UsersRolesDataSources;
+            /** The data source on the server to use when retrieving objects. Valid values are in this.dataSources. */
+            _this.dataSource = new _this.dataSources.Default();
+            /** Configuration for this UsersRolesList instance. */
+            _this.coalesceConfig = new Coalesce.ListViewModelConfiguration(UsersRolesList.coalesceConfig);
+            _this.createItem = function (newItem, parent) { return new ViewModels.UsersRoles(newItem, parent); };
+            return _this;
+        }
+        /** Configuration for all instances of UsersRolesList. Can be overidden on each instance via instance.coalesceConfig. */
+        UsersRolesList.coalesceConfig = new Coalesce.ListViewModelConfiguration(Coalesce.GlobalConfiguration.listViewModel);
+        return UsersRolesList;
+    }(Coalesce.BaseListViewModel));
+    ListViewModels.UsersRolesList = UsersRolesList;
 })(ListViewModels || (ListViewModels = {}));
 
 //# sourceMappingURL=app.js.map

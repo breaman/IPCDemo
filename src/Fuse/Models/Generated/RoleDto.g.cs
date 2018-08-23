@@ -16,6 +16,7 @@ namespace Fuse.Models
 
         public string Name { get; set; }
         public System.Collections.Generic.IList<Fuse.Models.RoleClaimDtoGen> Claims { get; set; }
+        public System.Collections.Generic.IList<Fuse.Models.UserDtoGen> Users { get; set; }
         public int? Id { get; set; }
 
         /// <summary>
@@ -40,6 +41,18 @@ namespace Fuse.Models
             else if (propValClaims == null && tree?[nameof(this.Claims)] != null)
             {
                 this.Claims = new RoleClaimDtoGen[0];
+            }
+
+            var propValUsers = obj.Users;
+            if (propValUsers != null && (tree == null || tree[nameof(this.Users)] != null))
+            {
+                this.Users = propValUsers
+                    .AsQueryable().OrderBy("Id ASC").AsEnumerable<Fuse.Domain.Models.User>()
+                    .Select(f => f.MapToDto<Fuse.Domain.Models.User, UserDtoGen>(context, tree?[nameof(this.Users)])).ToList();
+            }
+            else if (propValUsers == null && tree?[nameof(this.Users)] != null)
+            {
+                this.Users = new UserDtoGen[0];
             }
 
         }

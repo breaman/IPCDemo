@@ -70,7 +70,7 @@
                         <td>@(Knockout.DisplayFor<Fuse.Domain.Models.User>(p => p.FirstName, true))</td>
                         <td>@(Knockout.DisplayFor<Fuse.Domain.Models.User>(p => p.LastName, true))</td>
                         <td>@(Knockout.DisplayFor<Fuse.Domain.Models.User>(p => p.EmailAddress, true))</td>
-                        <td>@(Knockout.DisplayFor<Fuse.Domain.Models.User>(p => p.EmailConfirmed, true))</td>
+                        <td>@(Knockout.DisplayFor<Fuse.Domain.Models.User>(p => p.ApprovalStatus, true))</td>
                         <td>@(Knockout.DisplayFor<Fuse.Domain.Models.User>(p => p.PhoneNumber, true))</td>
                         <td>
                             <a class="btn btn-default" data-bind="click: $parent.ApproveDecline">Approve/Decline</a>

@@ -173,10 +173,16 @@ namespace Zuul.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> SendCode(string returnUrl = null, bool rememberMe = false)
         {
+            List<SelectListItem> factorOptions = new List<SelectListItem> { new SelectListItem { Text = "Authenticator", Value = "Authenticator" } };
             var user = await GetTwoFactorAuthUser();
 
             var validTwoFactorAuth = await UserManager.GetValidTwoFactorProvidersAsync(user);
-            var factorOptions = validTwoFactorAuth.Select(purpose => new SelectListItem { Text = purpose, Value = purpose }).ToList();
+
+            if (validTwoFactorAuth.Count(v => v.ToLower() == "phone") > 0)
+            {
+                // need to only show Authenticator and Phone
+                factorOptions.Add(new SelectListItem { Text = "Phone", Value = "Phone" });
+            }
 
             return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
         }
@@ -192,7 +198,15 @@ namespace Zuul.Web.Controllers
 
             var user = await GetTwoFactorAuthUser();
 
-            return RedirectToAction(nameof(VerifyCode), new { viewModel.RememberMe, viewModel.SelectedProvider, viewModel.ReturnUrl });
+            if (viewModel.SelectedProvider.ToLower() == "phone")
+            {
+                // need to send the sms verification code
+                var code = await UserManager.GenerateTwoFactorTokenAsync(user, "Phone");
+                var message = $"Your security code is: {code}";
+                await SmsSender.SendSmsAsync(await UserManager.GetPhoneNumberAsync(user), code);
+            }
+
+            return RedirectToAction(nameof(VerifyCode), new { rememberMe = viewModel.RememberMe, authenticationMethod = viewModel.SelectedProvider, returnUrl = viewModel.ReturnUrl });
         }
 
         private async Task<User> GetTwoFactorAuthUser()

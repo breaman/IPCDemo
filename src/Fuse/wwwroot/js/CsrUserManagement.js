@@ -3,7 +3,6 @@ var CsrUserManagement;
     var CsrUserManagementViewModel = /** @class */ (function () {
         function CsrUserManagementViewModel() {
             this.allUsers = new ListViewModels.UserList();
-            this.allUsers.includes = "UserListGen";
             this.allUsers.load();
         }
         CsrUserManagementViewModel.prototype.confirmEmail = function (user) {

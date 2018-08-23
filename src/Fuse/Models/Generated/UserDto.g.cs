@@ -25,7 +25,9 @@ namespace Fuse.Models
         public System.DateTimeOffset? LockoutEnd { get; set; }
         public bool? AccountLocked { get; set; }
         public string PasswordHash { get; set; }
+        public string ApprovalStatus { get; set; }
         public System.Collections.Generic.IList<Fuse.Models.UserClaimDtoGen> Claims { get; set; }
+        public System.Collections.Generic.IList<Fuse.Models.RoleDtoGen> Roles { get; set; }
         public int? Id { get; set; }
 
         /// <summary>
@@ -49,6 +51,7 @@ namespace Fuse.Models
             this.LockoutEnd = obj.LockoutEnd;
             this.AccountLocked = obj.AccountLocked;
             this.PasswordHash = obj.PasswordHash;
+            this.ApprovalStatus = obj.ApprovalStatus;
             this.Id = obj.Id;
             var propValClaims = obj.Claims;
             if (propValClaims != null && (tree == null || tree[nameof(this.Claims)] != null))
@@ -60,6 +63,18 @@ namespace Fuse.Models
             else if (propValClaims == null && tree?[nameof(this.Claims)] != null)
             {
                 this.Claims = new UserClaimDtoGen[0];
+            }
+
+            var propValRoles = obj.Roles;
+            if (propValRoles != null && (tree == null || tree[nameof(this.Roles)] != null))
+            {
+                this.Roles = propValRoles
+                    .AsQueryable().OrderBy("Name ASC").AsEnumerable<Fuse.Domain.Models.Role>()
+                    .Select(f => f.MapToDto<Fuse.Domain.Models.Role, RoleDtoGen>(context, tree?[nameof(this.Roles)])).ToList();
+            }
+            else if (propValRoles == null && tree?[nameof(this.Roles)] != null)
+            {
+                this.Roles = new RoleDtoGen[0];
             }
 
         }
@@ -83,6 +98,7 @@ namespace Fuse.Models
             entity.AccessFailedCount = (AccessFailedCount ?? entity.AccessFailedCount);
             entity.LockoutEnd = LockoutEnd;
             entity.PasswordHash = PasswordHash;
+            entity.ApprovalStatus = ApprovalStatus;
             entity.Id = (Id ?? entity.Id);
         }
     }

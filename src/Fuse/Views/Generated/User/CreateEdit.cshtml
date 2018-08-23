@@ -62,8 +62,16 @@
                 <div class="col-md-8 prop-passwordHash">@(Knockout.InputFor<Fuse.Domain.Models.User>(p => p.PasswordHash))</div>
             </div>
             <div class="form-group">
+                <label class="col-md-4 control-label">Approval Status</label>
+                <div class="col-md-8 prop-approvalStatus">@(Knockout.InputFor<Fuse.Domain.Models.User>(p => p.ApprovalStatus))</div>
+            </div>
+            <div class="form-group">
                 <label class="col-md-4 control-label">Claims</label>
                 <div class="col-md-8 prop-claims"><a data-bind='attr: {href: claimsListUrl}, text: claims().length + " - Edit"' class='btn btn-default btn-sm'></a></div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-4 control-label">Roles</label>
+                <div class="col-md-8 prop-roles"><a data-bind='attr: {href: rolesListUrl}, text: roles().length + " - Edit"' class='btn btn-default btn-sm'></a></div>
             </div>
         </div>
     </div>

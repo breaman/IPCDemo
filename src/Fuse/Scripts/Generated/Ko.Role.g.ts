@@ -26,6 +26,7 @@ module ViewModels {
         
         public name: KnockoutObservable<string | null> = ko.observable(null);
         public claims: KnockoutObservableArray<ViewModels.RoleClaim> = ko.observableArray([]);
+        public users: KnockoutObservableArray<ViewModels.User> = ko.observableArray([]);
         public id: KnockoutObservable<number | null> = ko.observable(null);
         
         
@@ -74,6 +75,10 @@ module ViewModels {
             if (data.claims != null) {
                 // Merge the incoming array
                 Coalesce.KnockoutUtilities.RebuildArray(this.claims, data.claims, 'id', RoleClaim, this, allowCollectionDeletes);
+            }
+            if (data.users != null) {
+                // Merge the incoming array
+                Coalesce.KnockoutUtilities.RebuildArray(this.users, data.users, 'id', User, this, allowCollectionDeletes);
             }
             
             // The rest of the objects are loaded now.

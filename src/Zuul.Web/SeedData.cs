@@ -136,6 +136,62 @@ namespace Zuul.Web
                     {
                         Console.WriteLine("user role already exists");
                     }
+
+                    userRole = roleManager.FindByNameAsync("MYIPC_User").Result;
+                    if (userRole == null)
+                    {
+                        var result = roleManager.CreateAsync(new Role { Name = "MYIPC_User" }).Result;
+                        if (!result.Succeeded)
+                        {
+                            throw new Exception(result.Errors.First().Description);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("MYIPC_User role already exists");
+                    }
+
+                    userRole = roleManager.FindByNameAsync("MYIPC_Admin").Result;
+                    if (userRole == null)
+                    {
+                        var result = roleManager.CreateAsync(new Role { Name = "MYIPC_Admin" }).Result;
+                        if (!result.Succeeded)
+                        {
+                            throw new Exception(result.Errors.First().Description);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("MYIPC_Admin role already exists");
+                    }
+
+                    userRole = roleManager.FindByNameAsync("GIS_User").Result;
+                    if (userRole == null)
+                    {
+                        var result = roleManager.CreateAsync(new Role { Name = "GIS_User" }).Result;
+                        if (!result.Succeeded)
+                        {
+                            throw new Exception(result.Errors.First().Description);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("GIS_User role already exists");
+                    }
+
+                    userRole = roleManager.FindByNameAsync("GIS_Admin").Result;
+                    if (userRole == null)
+                    {
+                        var result = roleManager.CreateAsync(new Role { Name = "GIS_Admin" }).Result;
+                        if (!result.Succeeded)
+                        {
+                            throw new Exception(result.Errors.First().Description);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("GIS_Admin role already exists");
+                    }
                 }
             }
 

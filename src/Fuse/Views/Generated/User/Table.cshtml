@@ -109,7 +109,12 @@
                             Password Hash
                             <i class="pull-right fa" data-bind="css:{'fa-caret-up': orderBy() == 'PasswordHash', 'fa-caret-down': orderByDescending() == 'PasswordHash'}"></i>
                         </th>
+                        <th class="sortable-header" data-bind="click: function(){orderByToggle('ApprovalStatus')}">
+                            Approval Status
+                            <i class="pull-right fa" data-bind="css:{'fa-caret-up': orderBy() == 'ApprovalStatus', 'fa-caret-down': orderByDescending() == 'ApprovalStatus'}"></i>
+                        </th>
                         <th>Claims</th>
+                        <th>Roles</th>
                         <th style="width: 1%">
                         </th>
                     </tr>
@@ -129,7 +134,9 @@
                             <td class="prop-lockoutEnd">@(Knockout.InputFor<Fuse.Domain.Models.User>(p => p.LockoutEnd))</td>
                             <td class="prop-accountLocked">@(Knockout.DisplayFor<Fuse.Domain.Models.User>(p => p.AccountLocked, true))</td>
                             <td class="prop-passwordHash">@(Knockout.InputFor<Fuse.Domain.Models.User>(p => p.PasswordHash))</td>
+                            <td class="prop-approvalStatus">@(Knockout.InputFor<Fuse.Domain.Models.User>(p => p.ApprovalStatus))</td>
                             <td class="prop-claims"><a data-bind='attr: {href: claimsListUrl}, text: claims().length + " - Edit"' class='btn btn-default btn-sm'></a></td>
+                            <td class="prop-roles"><a data-bind='attr: {href: rolesListUrl}, text: roles().length + " - Edit"' class='btn btn-default btn-sm'></a></td>
                         }
                         else
                         {
@@ -144,7 +151,9 @@
                             <td class="prop-lockoutEnd">@(Knockout.DisplayFor<Fuse.Domain.Models.User>(p => p.LockoutEnd, true))</td>
                             <td class="prop-accountLocked">@(Knockout.DisplayFor<Fuse.Domain.Models.User>(p => p.AccountLocked, true))</td>
                             <td class="prop-passwordHash">@(Knockout.DisplayFor<Fuse.Domain.Models.User>(p => p.PasswordHash, true))</td>
+                            <td class="prop-approvalStatus">@(Knockout.DisplayFor<Fuse.Domain.Models.User>(p => p.ApprovalStatus, true))</td>
                             <td class="prop-claims"><a data-bind='attr: {href: claimsListUrl}, text: claims().length + " - Edit"' class='btn btn-default btn-sm'></a></td>
+                            <td class="prop-roles"><a data-bind='attr: {href: rolesListUrl}, text: roles().length + " - Edit"' class='btn btn-default btn-sm'></a></td>
                         }
                         <td>
                             <!-- Editor buttons -->

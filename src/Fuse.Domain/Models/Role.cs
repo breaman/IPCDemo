@@ -14,6 +14,8 @@ namespace Fuse.Domain.Models
     {
         public string Name { get; set; }
         public IList<RoleClaim> Claims { get; set; }
+        [NotMapped]
+        public IList<User> Users { get; set; }
     }
 
     [Coalesce]

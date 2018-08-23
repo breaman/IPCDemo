@@ -35,7 +35,9 @@ module ViewModels {
         public lockoutEnd: KnockoutObservable<moment.Moment | null> = ko.observable(null);
         public accountLocked: KnockoutObservable<boolean | null> = ko.observable(null);
         public passwordHash: KnockoutObservable<string | null> = ko.observable(null);
+        public approvalStatus: KnockoutObservable<string | null> = ko.observable(null);
         public claims: KnockoutObservableArray<ViewModels.UserClaim> = ko.observableArray([]);
+        public roles: KnockoutObservableArray<ViewModels.Role> = ko.observableArray([]);
         public id: KnockoutObservable<number | null> = ko.observable(null);
         
         
@@ -85,6 +87,10 @@ module ViewModels {
                 // Merge the incoming array
                 Coalesce.KnockoutUtilities.RebuildArray(this.claims, data.claims, 'id', UserClaim, this, allowCollectionDeletes);
             }
+            if (data.roles != null) {
+                // Merge the incoming array
+                Coalesce.KnockoutUtilities.RebuildArray(this.roles, data.roles, 'id', Role, this, allowCollectionDeletes);
+            }
             
             // The rest of the objects are loaded now.
             this.firstName(data.firstName);
@@ -101,6 +107,7 @@ module ViewModels {
             }
             this.accountLocked(data.accountLocked);
             this.passwordHash(data.passwordHash);
+            this.approvalStatus(data.approvalStatus);
             if (this.coalesceConfig.onLoadFromDto()){
                 this.coalesceConfig.onLoadFromDto()(this as any);
             }
@@ -125,6 +132,7 @@ module ViewModels {
             if (!this.lockoutEnd()) dto.lockoutEnd = null;
             else dto.lockoutEnd = this.lockoutEnd()!.format('YYYY-MM-DDTHH:mm:ssZZ');
             dto.passwordHash = this.passwordHash();
+            dto.approvalStatus = this.approvalStatus();
             
             return dto;
         }
@@ -183,6 +191,7 @@ module ViewModels {
             self.accessFailedCount.subscribe(self.autoSave);
             self.lockoutEnd.subscribe(self.autoSave);
             self.passwordHash.subscribe(self.autoSave);
+            self.approvalStatus.subscribe(self.autoSave);
             
             if (newItem) {
                 self.loadFromDto(newItem, true);

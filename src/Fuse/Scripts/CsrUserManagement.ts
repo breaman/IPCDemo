@@ -3,7 +3,6 @@
         allUsers = new ListViewModels.UserList();
 
         constructor() {
-            this.allUsers.includes = "UserListGen";
             this.allUsers.load();
         }
 

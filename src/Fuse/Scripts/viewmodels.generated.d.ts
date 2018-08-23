@@ -14,3 +14,5 @@
 /// <reference path="Generated/Ko.UserClaim.g.ts" />
 /// <reference path="Generated/Ko.UserClaimList.g.ts" />
 /// <reference path="Generated/Ko.UserList.g.ts" />
+/// <reference path="Generated/Ko.UsersRoles.g.ts" />
+/// <reference path="Generated/Ko.UsersRolesList.g.ts" />

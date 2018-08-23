@@ -15,6 +15,8 @@ module ListViewModels {
                 return dto;
             }
         }
+        export class FetchUsersForManagement extends Coalesce.DataSource<ViewModels.User> {
+        }
     }
     
     export class UserList extends Coalesce.BaseListViewModel<ViewModels.User> {
